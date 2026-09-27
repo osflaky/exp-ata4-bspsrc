@@ -1,0 +1,32 @@
+name: Application packaging
+run-name: ${{ github.ref_name }}
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: macos-latest
+          arch: arm64
+          runner: macos-latest
+          expander_leg: macos-latest--arm64
+    name: Test [${{ matrix.expander_leg }}]
+    runs-on: ${{ matrix.runner }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Set up JDK
+      uses: actions/setup-java@v5
+      with:
+        java-version: ${{ matrix.java || '24' }}
+        distribution: ${{ matrix.distribution || 'temurin' }}
+        architecture: ${{ matrix.arch }}
+        cache: maven
+
+    - name: Maven test
+      run: mvn -B test
+
+    timeout-minutes: 150
